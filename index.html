@@ -21,7 +21,8 @@ main{max-width:520px;margin:0 auto;padding:22px 18px 40px}
 .kick{font-family:EFB;font-size:13px;letter-spacing:3px;color:var(--red)}
 h1{font-family:EFB;font-size:32px;line-height:1.08;margin:6px 0 10px}
 .bar{width:90px;height:6px;background:var(--red);margin:0 0 16px}
-p.lead{color:#d6dadd;margin:0 0 22px}
+p.lead{color:#d6dadd;margin:0 0 12px}
+p.once{color:#fff;font-size:14px;margin:0 0 22px;padding:10px 12px;border-left:4px solid var(--red);background:var(--panel);border-radius:0 10px 10px 0}
 .photo{display:flex;align-items:center;gap:16px;background:var(--panel);border-radius:14px;padding:14px;margin-bottom:6px}
 .photo canvas{width:96px;height:96px;border-radius:50%;border:4px solid var(--red);background:#000;flex:0 0 96px}
 .photo .pb{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
@@ -54,6 +55,7 @@ input[type=text]:focus{outline:2px solid var(--red);border-color:transparent}
   <div class="kick">CLUB LEAGUE · #clubleague</div>
   <h1 data-t="title"></h1><div class="bar"></div>
   <p class="lead" data-t="lead"></p>
+  <p class="once" data-t="once"></p>
 
   <div class="photo">
     <canvas id="pv" width="192" height="192"></canvas>
@@ -83,15 +85,17 @@ input[type=text]:focus{outline:2px solid var(--red);border-color:transparent}
   <div class="kick">#clubleague</div>
   <h1 data-t="thanks"></h1>
   <p class="lead" data-t="thanksText"></p>
-  <a href="https://chat.whatsapp.com/CTYC1Kc1ItdDHoRU9LEv1J" data-t="community"></a>
+  <a href="https://chat.whatsapp.com/CTYC1Kc1ItdDHoRU9LEv1J" id="community" data-t="community"></a>
 </main>
 
 <script>
 (() => {
 'use strict';
 const API = 'https://script.google.com/macros/s/AKfycbyQiCv3Yo3lYLESkgjFTQrFxi-58CjfnQOoVjKw_GYhTFTBaIJMuDMYMtprSvBzR8ZH/exec';
+const MODE = 'clubleague';   // clubleague | juniorcup: same page, same base, same consent
 const T = {
   fr: { title: 'Apparais dans nos stories', lead: "Podium de la semaine, Driver of the Night : donne-nous ton @Instagram et ta photo pour qu'on te tague dans les stories du Tuesday Club.",
+        once: "Une seule inscription vaut pour tous nos championnats (Club League, Junior Cup). Déjà inscrit ? Rien à refaire, sauf pour changer ta photo ou ton @.",
         pick: 'Ajouter ma photo', drop: 'Retirer', photoNote: 'Facultatif. Sans photo, on met le casque.',
         first: 'Prénom', last: 'Nom', ig: 'Ton compte Instagram (facultatif)',
         consent: "J'accepte d'apparaître (nom, photo) et d'être tagué dans les stories Instagram des championnats d'Experience Factory Eupen (Club League, Junior Cup et futurs championnats).",
@@ -99,6 +103,7 @@ const T = {
         privacy: "Ta photo et ton @ servent uniquement aux stories des championnats d'Experience Factory Eupen. Pour les retirer, préviens l'accueil.",
         thanks: 'Merci !', thanksText: 'Tu es inscrit. On se voit mardi sur la piste.', community: 'Retour à la communauté WhatsApp' },
   de: { title: 'Erscheine in unseren Stories', lead: 'Podium der Woche, Driver of the Night: Gib uns dein @Instagram und dein Foto, damit wir dich in den Stories des Tuesday Club markieren können.',
+        once: 'Eine Anmeldung gilt für alle unsere Meisterschaften (Club League, Junior Cup). Schon angemeldet? Nichts zu tun, außer du willst dein Foto oder dein @ ändern.',
         pick: 'Foto hinzufügen', drop: 'Entfernen', photoNote: 'Freiwillig. Ohne Foto zeigen wir den Helm.',
         first: 'Vorname', last: 'Name', ig: 'Dein Instagram-Konto (freiwillig)',
         consent: 'Ich bin einverstanden, in den Instagram-Stories der Meisterschaften von Experience Factory Eupen (Club League, Junior Cup und künftige Meisterschaften) zu erscheinen (Name, Foto) und markiert zu werden.',
@@ -106,6 +111,7 @@ const T = {
         privacy: 'Dein Foto und dein @ werden nur für die Stories der Meisterschaften von Experience Factory Eupen verwendet. Zum Entfernen sag an der Rezeption Bescheid.',
         thanks: 'Danke!', thanksText: 'Du bist angemeldet. Wir sehen uns Dienstag auf der Strecke.', community: 'Zurück zur WhatsApp-Community' },
   en: { title: 'Get featured in our stories', lead: 'Podium of the week, Driver of the Night: share your @Instagram and your photo so we can tag you in the Tuesday Club stories.',
+        once: 'One sign-up covers all our championships (Club League, Junior Cup). Already signed up? Nothing to do, unless you want to change your photo or @.',
         pick: 'Add my photo', drop: 'Remove', photoNote: 'Optional. No photo? We show the helmet.',
         first: 'First name', last: 'Last name', ig: 'Your Instagram account (optional)',
         consent: 'I agree to appear (name, photo) and be tagged in the Instagram stories of the Experience Factory Eupen championships (Club League, Junior Cup and future championships).',
@@ -113,6 +119,17 @@ const T = {
         privacy: 'Your photo and @ are only used for the Experience Factory Eupen championship stories. To remove them, tell the reception.',
         thanks: 'Thanks!', thanksText: "You're in. See you Tuesday on track.", community: 'Back to the WhatsApp community' },
 };
+// Junior Cup variant: own wording, everything else (base, consent, photos) shared
+const TJ = {
+  fr: { lead: "Podium de chaque manche : donne-nous ton @Instagram et ta photo pour qu'on te tague dans les stories de la Junior Cup.",
+        thanksText: 'Tu es inscrit. On se voit à la prochaine manche.', community: 'Rejoindre la communauté WhatsApp Junior Cup' },
+  de: { lead: 'Podium jeder Runde: Gib uns dein @Instagram und dein Foto, damit wir dich in den Stories des Junior Cups markieren können.',
+        thanksText: 'Du bist angemeldet. Wir sehen uns bei der nächsten Runde.', community: 'Der WhatsApp-Community des Junior Cups beitreten' },
+  en: { lead: 'Podium of every round: share your @Instagram and your photo so we can tag you in the Junior Cup stories.',
+        thanksText: "You're in. See you at the next round.", community: 'Join the Junior Cup WhatsApp community' },
+};
+if (MODE === 'juniorcup') for (const l in TJ) Object.assign(T[l], TJ[l]);
+if (!document.getElementById('community').getAttribute('href')) document.getElementById('community').classList.add('hidden');
 let L = (navigator.language || 'fr').slice(0, 2);
 if (!T[L]) L = 'fr';
 function setLang(l) {
